@@ -1,0 +1,6 @@
+mixin input(type, labelText)
+	-var labelText = labelText || ''
+	.input_base
+		if labelText != ''
+			span.input_base__label=labelText
+		input.input_base__input(type=type)&attributes(attributes)

@@ -1,0 +1,187 @@
+.calc {
+	$root: &;
+
+	max-width: 700px;
+	width: 100%;
+	box-sizing: border-box;
+
+	box-shadow: 0 30px 60px 0 rgba(90, 116, 148, 0.4);
+	border-radius: 10px;
+
+	background: #fff;
+
+	&.-show-form {
+		#{$root} {
+			&__calculator {
+				display: none;
+			}
+
+			&__requisition {
+				display: block;
+			}
+		}
+	}
+
+	&__calculator {
+		padding: 0 20px 0 0;
+	}
+
+	&__container {
+		padding: 0 20px;
+	}
+
+	&__wrap {
+		padding: 20px 0;
+	}
+
+	&__title {
+		display: inline-block;
+
+		font-size: 20px;
+		font-weight: 700;
+
+		margin: 0 0 20px 0;
+	}
+
+	&__alert {
+		margin: 0 0 20px 0;
+	}
+
+	&-table {
+		$table: &;
+
+		&__thead {
+			
+		}
+
+		&__tr {
+			position: relative;
+
+			display: flex;
+			justify-content: flex-start;
+			align-items: center;
+
+			&:not(:last-of-type) {
+				margin: 0 0 5px 0;
+			}
+
+			&:first-of-type {
+				#{$table} {
+					&__button {
+						display: none;
+					}
+				}
+			}
+		}
+
+		&__td {
+			box-sizing: border-box;
+
+			&:nth-child(1) {
+				width: 25%;
+			}
+			&:nth-child(2) {
+				width: 25%;
+			}
+			&:nth-child(3) {
+				width: 35%;
+			}
+			&:nth-child(4) {
+				width: 15%;
+			}
+
+			&:not(:first-of-type) {
+				padding: 0 0 0 10px;
+			}
+		}
+
+		&__button {
+			position: absolute;
+			top: 50%;
+			right: -30px;
+
+			display: flex;
+			justify-content: center;
+			align-items: center;
+
+			width: 20px;
+			height: 20px;
+			padding: 0;
+			margin: -10px 0 0 0;
+
+			background-color: rgba(#24292e, 1);
+			border-radius: 5px;
+			border: none;
+
+			cursor: pointer;
+
+			&:hover {
+				background-color: rgba(#24292e, .7);
+			}
+
+			svg {
+				width: 10px;
+				height: 10px;
+
+				fill: $white;
+			}
+		}
+	}
+
+	&__button {
+		&.-add-row {
+			display: flex;
+			justify-content: flex-end;
+
+			width: 40%;
+			margin: 20px 0 0 auto;
+		}
+	}
+
+	&__footer {
+		display: flex;
+		justify-content: space-between;
+
+		margin: 30px 0 0 0;
+	}
+
+	&-result {
+		display: flex;	
+		flex-direction: column;
+		align-items: flex-end;
+
+		&-header {
+			font-size: 30px;
+		}
+
+		&-price {
+			font-size: 16px;
+
+		}
+	}
+
+	&__requisition {
+		display: none;
+	}
+
+	&-form {
+		
+
+		&__row {
+			&:not(:last-of-type) {
+				margin: 0 0 20px 0;
+			}
+		}
+
+		&__buttons {
+			display: flex;
+
+			margin: 0 -20px;
+		}
+
+		&__button {
+			width: 100%;
+			padding: 0 20px;
+		}
+	}
+}

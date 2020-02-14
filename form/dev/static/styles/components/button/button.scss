@@ -1,0 +1,26 @@
+.button {
+	width: 100%;
+
+	&_base {
+		height: 30px;
+		
+    background: #2364d2;
+    border: none;
+		border-radius: 5px;
+    box-shadow: 3px 10px 20px 0px rgba(35, 100, 210, 0.3);
+		
+		font-size: 16px;
+    cursor: pointer;
+		
+		color: #fff;
+
+		&--disabled {
+			pointer-events: none;
+			background-color: rgba(#24292e, .3);
+		}
+
+		&--gray {
+			background-color: rgba(#24292e, .8);
+		}
+	}
+}

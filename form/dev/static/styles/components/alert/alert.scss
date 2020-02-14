@@ -1,0 +1,17 @@
+.alert {
+	background-color: rgba(#24292e, .8);
+	border-radius: 10px;
+
+	&__container {
+		padding: 0 20px;
+	}	
+
+	&__wrap {
+		padding: 15px 0;
+	}
+
+	&__text {
+		font-weight: 700%;
+		color: white;
+	}
+}

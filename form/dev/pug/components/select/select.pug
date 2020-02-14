@@ -1,0 +1,6 @@
+mixin select(defaultValue, options)
+	select.select.select_base
+		option.select_base__option(selected disabled)=defaultValue
+		each option in options
+			option.select_base__option=option
+		
