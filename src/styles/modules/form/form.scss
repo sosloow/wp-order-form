@@ -51,7 +51,7 @@
 		$table: &;
 
 		&__thead {
-			
+
 		}
 
 		&__tr {
@@ -146,7 +146,7 @@
 	}
 
 	&-result {
-		display: flex;	
+		display: flex;
 		flex-direction: column;
 		align-items: flex-end;
 
@@ -154,9 +154,11 @@
 			font-size: 30px;
 		}
 
-		&-price {
+		&-price-list {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-end;
 			font-size: 16px;
-
 		}
 	}
 
@@ -165,7 +167,7 @@
 	}
 
 	&-form {
-		
+
 
 		&__row {
 			&:not(:last-of-type) {

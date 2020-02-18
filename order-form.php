@@ -8,7 +8,8 @@ function cof_build_form() {
 }
 
 function cof_add_scripts() {
-    wp_enqueue_script('cof_main_script', '/wp-content/plugins/order-form/assets/js/custom.js', array('jquery'));
+    wp_enqueue_script('cof_vendor_script', '/wp-content/plugins/order-form/assets/js/vendor.js');
+    wp_enqueue_script('cof_main_script', '/wp-content/plugins/order-form/assets/js/custom.js', array('cof_vendor_script'));
 }
 
 function cof_add_styles() {
