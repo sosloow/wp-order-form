@@ -2,6 +2,8 @@
 /**
     Plugin Name: Order form
 **/
+define( 'WP_DEBUG', true );
+define( 'WP_DEBUG_LOG', true );
 
 function cof_build_form() {
     return file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/wp-content/plugins/order-form/index.php');
@@ -20,3 +22,23 @@ function cof_add_styles() {
 add_action('wp_enqueue_scripts', 'cof_add_scripts');
 add_action('wp_enqueue_scripts', 'cof_add_styles');
 add_shortcode('order-form', 'cof_build_form');
+
+// order form
+function send_pre_registration($request) {
+    $result = wp_mail(
+        'sosloow@gmail.com',
+        'Новый заказ',
+        "Новый заказ"
+    );
+
+    error_log(var_dump($result));
+
+    return new WP_REST_response('success', 200);
+}
+
+add_action('rest_api_init', function () {
+  register_rest_route( 'beta/v1', '/orders', array(
+    'methods' => 'POST',
+    'callback' => 'send_pre_registration',
+  ));
+});

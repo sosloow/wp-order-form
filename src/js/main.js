@@ -54,9 +54,13 @@ const Order = {
 
   addItem() {
     this.items.push({
-      product: null,
-      width: null,
-      length: null,
+      // product: null,
+      // width: null,
+      // length: null,
+      // weight: null,
+      product: 'ad99',
+      width: 1,
+      length: 1,
       weight: null,
       dimention: 'length',
     });
@@ -107,7 +111,7 @@ const Order = {
   },
 
   isValid() {
-    return items.reduce((isValid, item) => {
+    return this.items.reduce((isValid, item) => {
       const requiredFields = [
         'product',
         'width',
@@ -115,11 +119,11 @@ const Order = {
       ];
 
       const itemValid = requiredFields.reduce((isValid, field) => {
-        return isValid && item[field];
+        const validRange = RESTRICTIONS[field] ? item[field] >= RESTRICTIONS[field].min && item[field] <= RESTRICTIONS[field].max
+          : true;
+
+        return isValid && validRange && Boolean(item[field]);
       }, true);
-      const validRange = RESTRICTIONS[field]
-        ? item[field] >= RESTRICTIONS[field].min && item[field] <= RESTRICTIONS[field].max
-        : true;
 
       return isValid && itemValid;
     }, true);
@@ -163,6 +167,10 @@ $(document).ready(function() {
   const $tableBodyNode = $(tableBodyNode);
   const $totalNode = $(totalNode);
   const $priceListNode = $(priceListNode);
+  const calcForm = $('form[name=calc-form]');
+  const submitBtn = $('.order-form-submit');
+  const successAlert = $('.alert-send-success');
+  const errorAlert = $('.alert-send-error');
 
   checkoutButton.addEventListener('click', () => {
     if (Order.isValid()) {
@@ -180,11 +188,18 @@ $(document).ready(function() {
 
     Order.removeItem(tr.dataset.id);
     drawTable();
+    drawCalc();
   });
 
   addButtonRowNode.addEventListener('click', () => {
     Order.addItem();
     drawTable();
+  });
+
+  submitBtn.on('click', (e) => {
+    e.preventDefault();
+
+    submitForm(calcForm);
   });
 
   drawTable = () => {
@@ -204,6 +219,66 @@ $(document).ready(function() {
     $priceListNode.empty();
 
     $priceListNode.append(Order.weightList().map(createPriceListItemNode));
+  }
+
+  const submitForm = (form) => {
+      const data = form.serializeArray();
+
+      // const formValid = validateForm(data, specs);
+
+      // if (! formValid) {
+      //     return;
+      // }
+
+      const json = {};
+      data.forEach(({name, value}) => json[name] = value);
+
+      sendOrder(json)
+      .then((errors) => {
+          if (errors) {
+              return sendFail(errors);
+          }
+
+          sendSuccess();
+      })
+      .catch(() => {
+          sendFail();
+      });
+  }
+
+  const sendFail = (errors) => {
+    errorAlert.addClass('-active');
+  }
+
+  const sendSuccess = (errors) => {
+    successAlert.addClass('-active');
+  }
+
+  const sendOrder = (json) => {
+      const url = 'http://localhost:8000/index.php?rest_route=/beta/v1/orders';
+      // const url = '/wp-json/beta/v1/orders';
+      const disabledClass = 'button_base--disabled';
+      const submitBtn = $('order-form-submit');
+      submitBtn.addClass(disabledClass);
+
+      return $.ajax({
+          method: 'POST',
+          url,
+          contentType : 'application/json',
+          data: JSON.stringify(json),
+      })
+      .then((res) => {
+          submitBtn.removeClass(disabledClass);
+
+          if (res.errors) {
+              return res.errors;
+          }
+      })
+      .catch((e) => {
+          submitBtn.removeClass(disabledClass);
+
+          throw e;
+      });
   }
 
   Order.addItem();

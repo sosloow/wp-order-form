@@ -1,3 +1,4 @@
+#order-form {
 .select {
 	width: 100%;
 	-webkit-appearance: none;
@@ -6,7 +7,7 @@
 		flex: 1;
 		height: 35px;
 		padding: 5px 10px;
-		
+
 		border: 1px solid #ced6e0;
     border-radius: 5px;
 		box-shadow: none;
@@ -16,17 +17,16 @@
     background-size: 10px;
     background-position: 95% center;
 		background-repeat: no-repeat;
-    
+
 		transition: all 0.3s ease-in-out;
-		
+
 		font-size: 14px;
-		
+
 		color: #1a3b5d;
 	}
 
 	&:-ms-expand {
     display: none;
 	}
-	
-
+}
 }

@@ -4,7 +4,7 @@
 
 	&__container {
 		padding: 0 20px;
-	}	
+	}
 
 	&__wrap {
 		padding: 15px 0;
@@ -13,5 +13,21 @@
 	&__text {
 		font-weight: 700%;
 		color: white;
+	}
+
+	&.alert-send {
+		display: none;
+
+		&.-active {
+			display: block;
+		}
+
+		&-success {
+
+		}
+
+		&-error {
+
+		}
 	}
 }

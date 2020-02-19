@@ -48,9 +48,13 @@ var Order = {
   items: [],
   addItem: function addItem() {
     this.items.push({
-      product: null,
-      width: null,
-      length: null,
+      // product: null,
+      // width: null,
+      // length: null,
+      // weight: null,
+      product: 'ad99',
+      width: 1,
+      length: 1,
       weight: null,
       dimention: 'length'
     });
@@ -95,12 +99,12 @@ var Order = {
     }, 0);
   },
   isValid: function isValid() {
-    return items.reduce(function (isValid, item) {
+    return this.items.reduce(function (isValid, item) {
       var requiredFields = ['product', 'width', item.dimention];
       var itemValid = requiredFields.reduce(function (isValid, field) {
-        return isValid && item[field];
+        var validRange = RESTRICTIONS[field] ? item[field] >= RESTRICTIONS[field].min && item[field] <= RESTRICTIONS[field].max : true;
+        return isValid && validRange && Boolean(item[field]);
       }, true);
-      var validRange = RESTRICTIONS[field] ? item[field] >= RESTRICTIONS[field].min && item[field] <= RESTRICTIONS[field].max : true;
       return isValid && itemValid;
     }, true);
   }
@@ -135,6 +139,10 @@ $(document).ready(function () {
   var $tableBodyNode = $(tableBodyNode);
   var $totalNode = $(totalNode);
   var $priceListNode = $(priceListNode);
+  var calcForm = $('form[name=calc-form]');
+  var submitBtn = $('.order-form-submit');
+  var successAlert = $('.alert-send-success');
+  var errorAlert = $('.alert-send-error');
   checkoutButton.addEventListener('click', function () {
     if (Order.isValid()) {
       setShowForm(true);
@@ -150,10 +158,15 @@ $(document).ready(function () {
     if (!button) return;
     Order.removeItem(tr.dataset.id);
     drawTable();
+    drawCalc();
   });
   addButtonRowNode.addEventListener('click', function () {
     Order.addItem();
     drawTable();
+  });
+  submitBtn.on('click', function (e) {
+    e.preventDefault();
+    submitForm(calcForm);
   });
 
   drawTable = function drawTable() {
@@ -170,6 +183,60 @@ $(document).ready(function () {
     $totalNode.text("\u0418\u0442\u043E\u0433: ".concat(Order.total(), " \u0440."));
     $priceListNode.empty();
     $priceListNode.append(Order.weightList().map(createPriceListItemNode));
+  };
+
+  var submitForm = function submitForm(form) {
+    var data = form.serializeArray(); // const formValid = validateForm(data, specs);
+    // if (! formValid) {
+    //     return;
+    // }
+
+    var json = {};
+    data.forEach(function (_ref) {
+      var name = _ref.name,
+          value = _ref.value;
+      return json[name] = value;
+    });
+    sendOrder(json).then(function (errors) {
+      if (errors) {
+        return sendFail(errors);
+      }
+
+      sendSuccess();
+    }).catch(function () {
+      sendFail();
+    });
+  };
+
+  var sendFail = function sendFail(errors) {
+    errorAlert.addClass('-active');
+  };
+
+  var sendSuccess = function sendSuccess(errors) {
+    successAlert.addClass('-active');
+  };
+
+  var sendOrder = function sendOrder(json) {
+    var url = 'http://localhost:8000/index.php?rest_route=/beta/v1/orders'; // const url = '/wp-json/beta/v1/orders';
+
+    var disabledClass = 'button_base--disabled';
+    var submitBtn = $('order-form-submit');
+    submitBtn.addClass(disabledClass);
+    return $.ajax({
+      method: 'POST',
+      url: url,
+      contentType: 'application/json',
+      data: JSON.stringify(json)
+    }).then(function (res) {
+      submitBtn.removeClass(disabledClass);
+
+      if (res.errors) {
+        return res.errors;
+      }
+    }).catch(function (e) {
+      submitBtn.removeClass(disabledClass);
+      throw e;
+    });
   };
 
   Order.addItem();
@@ -231,12 +298,12 @@ function createTableTdNode(content) {
 
 ;
 
-function createSelectNode(_ref) {
-  var placeholder = _ref.placeholder,
-      options = _ref.options,
-      data = _ref.data,
-      key = _ref.key,
-      onChange = _ref.onChange;
+function createSelectNode(_ref2) {
+  var placeholder = _ref2.placeholder,
+      options = _ref2.options,
+      data = _ref2.data,
+      key = _ref2.key,
+      onChange = _ref2.onChange;
   var value = data[key];
   var select = document.createElement('select');
   var $select = $(select);
@@ -283,19 +350,19 @@ function createSelectNode(_ref) {
 
 ;
 
-function createInputNode(_ref2) {
-  var placeholder = _ref2.placeholder,
-      _ref2$data = _ref2.data,
-      data = _ref2$data === void 0 ? {} : _ref2$data,
-      key = _ref2.key,
-      _ref2$min = _ref2.min,
-      min = _ref2$min === void 0 ? 0 : _ref2$min,
-      _ref2$max = _ref2.max,
-      max = _ref2$max === void 0 ? Infinity : _ref2$max,
-      _ref2$step = _ref2.step,
-      step = _ref2$step === void 0 ? 0.05 : _ref2$step,
-      _ref2$onChange = _ref2.onChange,
-      onChange = _ref2$onChange === void 0 ? function () {} : _ref2$onChange;
+function createInputNode(_ref3) {
+  var placeholder = _ref3.placeholder,
+      _ref3$data = _ref3.data,
+      data = _ref3$data === void 0 ? {} : _ref3$data,
+      key = _ref3.key,
+      _ref3$min = _ref3.min,
+      min = _ref3$min === void 0 ? 0 : _ref3$min,
+      _ref3$max = _ref3.max,
+      max = _ref3$max === void 0 ? Infinity : _ref3$max,
+      _ref3$step = _ref3.step,
+      step = _ref3$step === void 0 ? 0.05 : _ref3$step,
+      _ref3$onChange = _ref3.onChange,
+      onChange = _ref3$onChange === void 0 ? function () {} : _ref3$onChange;
   var div = document.createElement('div');
   div.classList.add('input_base');
   var input = document.createElement('input');
@@ -340,18 +407,18 @@ var createButtonNode = function createButtonNode() {
   return button;
 };
 
-function createPriceListItemNode(_ref3) {
-  var product = _ref3.product,
-      weight = _ref3.weight;
+function createPriceListItemNode(_ref4) {
+  var product = _ref4.product,
+      weight = _ref4.weight;
   var span = document.createElement('span');
   span.classList.add('calc-result-price');
   span.textContent = "".concat(product, ": ").concat(weight, " \u0433\u0440.");
   return span;
 }
 
-function createRowNode(_ref4) {
-  var id = _ref4.id,
-      item = _ref4.item;
+function createRowNode(_ref5) {
+  var id = _ref5.id,
+      item = _ref5.item;
   var tableTr = document.createElement('div');
   var selectMark = createSelectNode({
     placeholder: 'Марка',
