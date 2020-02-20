@@ -18,6 +18,91 @@ const DIMENTIONS = [{
   label: 'гр',
 }];
 
+WIDTH_WEIGHTS = [{
+  "width": 0.5,
+  "weight": 2.06
+},
+{
+  "width": 0.6,
+  "weight": 2.96
+},
+{
+  "width": 0.7,
+  "weight": 4.03
+},
+{
+  "width": 0.8,
+  "weight": 5.27
+},
+{
+  "width": 0.9,
+  "weight": 6.67
+},
+{
+  "width": 1,
+  "weight": 8.24
+},
+{
+  "width": 1.1,
+  "weight": 9.97
+},
+{
+  "width": 1.2,
+  "weight": 11.86
+},
+{
+  "width": 1.3,
+  "weight": 13.93
+},
+{
+  "width": 1.4,
+  "weight": 16.16
+},
+{
+  "width": 1.5,
+  "weight": 18.55
+},
+{
+  "width": 1.6,
+  "weight": 21.1
+},
+{
+  "width": 1.7,
+  "weight": 23.82
+},
+{
+  "width": 1.8,
+  "weight": 26.71
+},
+{
+  "width": 1.9,
+  "weight": 29.75
+},
+{
+  "width": 2,
+  "weight": 32.97
+},
+{
+  "width": 2.1,
+  "weight": 36.35
+},
+{
+  "width": 2.2,
+  "weight": 39.89
+},
+{
+  "width": 2.3,
+  "weight": 43.6
+},
+{
+  "width": 2.4,
+  "weight": 47.48
+},
+{
+  "width": 2.5,
+  "weight": 51.52
+}];
+
 const PRICES = [{
   width: 0.5,
   price: 70,
@@ -54,24 +139,28 @@ const Order = {
 
   addItem() {
     this.items.push({
-      // product: null,
-      // width: null,
-      // length: null,
-      // weight: null,
-      product: 'ad99',
-      width: 1,
-      length: 1,
+      product: null,
+      width: null,
+      length: null,
       weight: null,
+      // product: 'ad99',
+      // width: 1,
+      // length: 1,
+      // weight: null,
       dimention: 'length',
     });
   },
 
   removeItem(index) {
     this.items.splice(Number(index), 1);
+
+    if (this.items.length < 1) {
+      this.addItem();
+    }
   },
 
   total() {
-    return this.items.reduce((sum, item) => {
+    const total = this.items.reduce((sum, item) => {
       const priceDict = PRICES.find((p) => item.width < p.width);
       const price = (item.width && priceDict ? priceDict.price : 0);
       const measure = item.dimention === 'weight'
@@ -80,6 +169,8 @@ const Order = {
 
       return sum + price * (measure || 0);
     }, 0);
+
+    return Math.round(total * 100) / 100;
   },
 
   weightList() {
@@ -105,9 +196,11 @@ const Order = {
   },
 
   totalWeight() {
-    return this.weightList().reduce((sum, i) => {
+    const weight = this.weightList().reduce((sum, i) => {
       return sum + i.weight;
     }, 0);
+
+    return Math.round(weight * 100) / 100;
   },
 
   isValid() {
@@ -132,8 +225,6 @@ const Order = {
 
 
 $(document).ready(function() {
-  // svg4everybody({});
-
   // init input mask
   const inputsNumberMask = document.querySelectorAll('.js-input-number-mask');
   const inputsPhoneMask = document.querySelectorAll('.js-input-phone-mask');
@@ -221,29 +312,61 @@ $(document).ready(function() {
     $priceListNode.append(Order.weightList().map(createPriceListItemNode));
   }
 
+  const sendOrder = (json) => {
+    const url = '/index.php?rest_route=/beta/v1/orders';
+    // const url = '/wp-json/beta/v1/orders';
+    const disabledClass = 'button_base--disabled';
+    const submitBtn = $('order-form-submit');
+    submitBtn.addClass(disabledClass);
+
+    return $.ajax({
+      method: 'POST',
+      url,
+      contentType : 'application/json',
+      data: JSON.stringify({
+        name: json.name,
+        phone: json.phone,
+        email: json.email,
+        items: Order.items,
+      }),
+    })
+    .then((res) => {
+      submitBtn.removeClass(disabledClass);
+
+      if (res.errors) {
+        return res.errors;
+      }
+    })
+    .catch((e) => {
+      submitBtn.removeClass(disabledClass);
+
+      throw e;
+    });
+  }
+
   const submitForm = (form) => {
-      const data = form.serializeArray();
+    const data = form.serializeArray();
 
-      // const formValid = validateForm(data, specs);
+    // const formValid = validateForm(data, specs);
 
-      // if (! formValid) {
-      //     return;
-      // }
+    // if (! formValid) {
+    //     return;
+    // }
 
-      const json = {};
-      data.forEach(({name, value}) => json[name] = value);
+    const json = {};
+    data.forEach(({name, value}) => json[name] = value);
 
-      sendOrder(json)
-      .then((errors) => {
-          if (errors) {
-              return sendFail(errors);
-          }
+    return sendOrder(json)
+    .then((errors) => {
+      if (errors) {
+        return sendFail(errors);
+      }
 
-          sendSuccess();
-      })
-      .catch(() => {
-          sendFail();
-      });
+      sendSuccess();
+    })
+    .catch(() => {
+      sendFail();
+    });
   }
 
   const sendFail = (errors) => {
@@ -251,34 +374,9 @@ $(document).ready(function() {
   }
 
   const sendSuccess = (errors) => {
+    setShowForm(false);
+
     successAlert.addClass('-active');
-  }
-
-  const sendOrder = (json) => {
-      const url = 'http://localhost:8000/index.php?rest_route=/beta/v1/orders';
-      // const url = '/wp-json/beta/v1/orders';
-      const disabledClass = 'button_base--disabled';
-      const submitBtn = $('order-form-submit');
-      submitBtn.addClass(disabledClass);
-
-      return $.ajax({
-          method: 'POST',
-          url,
-          contentType : 'application/json',
-          data: JSON.stringify(json),
-      })
-      .then((res) => {
-          submitBtn.removeClass(disabledClass);
-
-          if (res.errors) {
-              return res.errors;
-          }
-      })
-      .catch((e) => {
-          submitBtn.removeClass(disabledClass);
-
-          throw e;
-      });
   }
 
   Order.addItem();

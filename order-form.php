@@ -24,14 +24,17 @@ add_action('wp_enqueue_scripts', 'cof_add_styles');
 add_shortcode('order-form', 'cof_build_form');
 
 // order form
-function send_pre_registration($request) {
-    $result = wp_mail(
-        'sosloow@gmail.com',
-        'Новый заказ',
-        "Новый заказ"
-    );
+function create_new_order($request) {
+    $email = 's.shilin@cuberto.ru';
+    $subject = 'Новый заказ';
 
-    error_log(var_dump($result));
+    $text = "Имя: ".$request->name."\nНомер телефона: ".$request->phone."\nEmail: ".$request->email;
+
+    $result = wp_mail(
+        $email,
+        $subject,
+        $text
+    );
 
     return new WP_REST_response('success', 200);
 }
@@ -39,6 +42,6 @@ function send_pre_registration($request) {
 add_action('rest_api_init', function () {
   register_rest_route( 'beta/v1', '/orders', array(
     'methods' => 'POST',
-    'callback' => 'send_pre_registration',
+    'callback' => 'create_new_order',
   ));
 });
