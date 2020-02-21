@@ -26,12 +26,12 @@ add_shortcode('order-form', 'cof_build_form');
 // order form
 function create_new_order($request) {
     $order = $request->get_json_params();
-    $email = 's.shilin@cuberto.ru';
-    // $email = 'silversalt@mail.ru';
+    // $email = 's.shilin@cuberto.ru';
+    $email = 'silversalt@mail.ru';
     $subject = 'Новый заказ';
 
-    $text = "Имя: ".$order['name']."\nНомер телефона: ".$order['phone']."\nEmail: ".$order['email']."\n\nЗаказ:".build_order_items_list($order);
-
+    $text = "Имя: ".$order['name']."\nНомер телефона: ".$order['phone']."\nEmail: ".$order['email']."\n\nЗаказ:".build_order_items_list($order)."\n\nИтог: ".$order['total'].' руб.';
+    echo(var_dump($text));
     $result = wp_mail(
         $email,
         $subject,

@@ -76,6 +76,7 @@ var RESTRICTIONS = {
     max: 1000
   }
 };
+var PRICE_ADDED = 0.1;
 var MIN_ORDER_WEIGHT = 100;
 var CLASS_DISABLED = 'button_base--disabled';
 var Order = {
@@ -97,21 +98,46 @@ var Order = {
     }
   },
   total: function total() {
-    var total = this.items.reduce(function (sum, item) {
+    var total = this.listValid().sort(function (i1, i2) {
+      return i1.width > i2.width ? 1 : -1;
+    }).reduce(function (sumByProducts, item) {
       var product = PRODUCTS.find(function (p) {
         return p.id === item.product;
       });
 
       if (!product) {
-        return sum;
+        return sumByProducts;
       }
 
       var priceDict = product.prices.find(function (p) {
         return item.width < p.width;
       });
-      var price = item.width && priceDict ? priceDict.price : 0;
-      var measure = item.dimention === 'weight' ? item.weight : item.length * widthWeight(item);
-      return sum + price * (measure || 0);
+
+      if (!priceDict) {
+        return sumByProducts;
+      } // console.log(sumByProducts);
+
+
+      var sumObject = sumByProducts.find(function (s) {
+        return s.id === product.id;
+      });
+      var hasAddedPrice = sumObject.count > 1;
+      var price = priceDict.price * item.weight + (hasAddedPrice ? priceDict.price * PRICE_ADDED : 0);
+      var sumIndex = sumByProducts.indexOf(sumObject);
+      var updatedSumObject = {
+        id: sumObject.id,
+        count: sumObject.count + 1,
+        total: sumObject.total + price
+      };
+      return sumByProducts.slice(0, sumIndex).concat([updatedSumObject]).concat(sumByProducts.slice(sumIndex + 1, sumByProducts.length));
+    }, PRODUCTS.map(function (p) {
+      return {
+        id: p.id,
+        count: 0,
+        total: 0
+      };
+    })).reduce(function (sum, s) {
+      return sum + s.total;
     }, 0);
     return Math.round(total * 100) / 100;
   },
@@ -278,7 +304,8 @@ $(document).ready(function () {
         name: json.name,
         phone: json.phone,
         email: json.email,
-        items: Order.listValid()
+        items: Order.listValid(),
+        total: Order.total()
       })
     }).then(function (res) {
       submitBtn.removeClass(CLASS_DISABLED);

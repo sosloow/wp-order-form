@@ -80,6 +80,8 @@ const RESTRICTIONS = {
   },
 };
 
+const PRICE_ADDED = 0.1;
+
 const MIN_ORDER_WEIGHT = 100;
 
 const CLASS_DISABLED = 'button_base--disabled';
@@ -106,21 +108,38 @@ const Order = {
   },
 
   total() {
-    const total = this.items.reduce((sum, item) => {
+    const total = this.listValid()
+    .sort((i1, i2) => i1.width > i2.width ? 1 : -1)
+    .reduce((sumByProducts, item) => {
       const product = PRODUCTS.find((p) => p.id === item.product);
       if (!product) {
-        return sum;
+        return sumByProducts;
       }
-
       const priceDict = product.prices.find((p) => item.width < p.width);
-      const price = (item.width && priceDict ? priceDict.price : 0);
+      if (!priceDict) {
+        return sumByProducts;
+      }
+      // console.log(sumByProducts);
+      const sumObject = sumByProducts.find((s) => s.id === product.id);
+      const hasAddedPrice = sumObject.count > 1;
 
-      const measure = item.dimention === 'weight'
-        ? item.weight
-        : item.length * widthWeight(item);
+      const price =
+        priceDict.price * item.weight
+        + (hasAddedPrice ? priceDict.price * PRICE_ADDED : 0);
 
-      return sum + price * (measure || 0);
-    }, 0);
+      const sumIndex = sumByProducts.indexOf(sumObject);
+      const updatedSumObject = {
+        id: sumObject.id,
+        count: sumObject.count + 1,
+        total: sumObject.total + price,
+      };
+
+      return sumByProducts
+      .slice(0, sumIndex)
+      .concat([updatedSumObject])
+      .concat(sumByProducts.slice(sumIndex + 1, sumByProducts.length));
+    }, PRODUCTS.map((p) => ({id: p.id, count: 0, total: 0})))
+    .reduce(((sum, s) => {return sum + s.total}), 0);
 
     return Math.round(total * 100) / 100;
   },
@@ -314,6 +333,7 @@ $(document).ready(function() {
         phone: json.phone,
         email: json.email,
         items: Order.listValid(),
+        total: Order.total(),
       }),
     })
     .then((res) => {

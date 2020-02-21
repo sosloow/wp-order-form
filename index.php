@@ -50,7 +50,7 @@
                 <div class="calc__alert">
                   <div class="alert alert-send alert-send-success">
                     <div class="alert__container">
-                      <div class="alert__wrap"><span class="alert__text">Заказ успешно отпрален!</span></div>
+                      <div class="alert__wrap"><span class="alert__text">Заявка успешно отправленa!</span></div>
                     </div>
                   </div>
                   <div class="alert">
