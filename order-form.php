@@ -27,6 +27,7 @@ add_shortcode('order-form', 'cof_build_form');
 function create_new_order($request) {
     $order = $request->get_json_params();
     $email = 's.shilin@cuberto.ru';
+    // $email = 'silversalt@mail.ru';
     $subject = 'Новый заказ';
 
     $text = "Имя: ".$order['name']."\nНомер телефона: ".$order['phone']."\nEmail: ".$order['email']."\n\nЗаказ:".build_order_items_list($order);
@@ -53,13 +54,14 @@ function build_order_items_list($order) {
     }
 
     $PRODUCTS = array(
-      'ag99' => 'Ад 99,99',
-      'agcu92' => 'АдСи 92,5'
+      'ag99' => 'Ag 99,99',
+      'agcu925' => 'AgCu 92,5',
+      'agcu72' => 'AgCu 72'
     );
 
     $text = '';
     foreach($order['items'] as $item) {
-        $text = $text."\n".$PRODUCTS[$item['product']].', толщина: '.$item['width'].'мм, вес: '.$item['weight'].'г'.($item['length'] ? ', длина: '.$item['length'].'м' : '');
+        $text = $text."\n".$PRODUCTS[$item['product']].', диаметр: '.$item['width'].'мм, вес: '.$item['weight'].'г'.($item['length'] ? ', длина: '.$item['length'].'м' : '');
     }
 
     return $text;

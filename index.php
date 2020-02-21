@@ -10,7 +10,7 @@
                 <div class="calc__alert">
                   <div class="alert alert-send alert-send-error">
                     <div class="alert__container">
-                      <div class="alert__wrap"><span class="alert__text">Произошла ошибка при отправке заказа.</span></div>
+                      <div class="alert__wrap"><span class="alert__text">Произошла ошибка при отправке заявки.</span></div>
                     </div>
                   </div>
                 </div>
@@ -38,7 +38,7 @@
                   </div>
                   <div class="calc-form__buttons">
                     <div class="calc-form__button">
-                      <button class="button button_base order-form-submit" type="button">Отправить</button>
+                      <button class="button button_base button_base--disabled order-form-submit" type="button">Отправить</button>
                     </div>
                     <div class="calc-form__button">
                       <button class="button button_base js-cancel-button button_base--gray" type="button">Отмена</button>
@@ -63,7 +63,7 @@
                   <div class="calc-table__thead">
                     <div class="calc-table__tr">
                       <div class="calc-table__td"><span>Марка</span></div>
-                      <div class="calc-table__td"><span>Толщина, мм</span></div>
+                      <div class="calc-table__td"><span>Диаметр, мм</span></div>
                       <div class="calc-table__td length-weight-header"><span>Количество</span></div>
                       <div class="calc-table__td"><span>Измерение</span></div>
                     </div>
@@ -80,7 +80,7 @@
                     <span class="js-price-list calc-result-price-list"></span>
                   </div>
                   <div class="from__button -checkout">
-                    <button class="button button_base js-checkout-button" type="button">Оформить заказ</button>
+                    <button class="button button_base button_base--disabled js-checkout-button" type="button">Оформить заявку</button>
                   </div>
                 </div>
               </div>

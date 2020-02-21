@@ -1,16 +1,60 @@
 "use strict";
 
 //import IMask from './node_modules/imask/dist/imask.js';
-var drawTable, drawCalc;
+var drawTable, drawCalc, sendSuccess, sendFail, resetAlerts;
 var PRODUCTS = [{
   id: 'ag99',
-  label: 'Ad 99,99',
-  density: 0.0105
+  label: 'Ag 99,99',
+  density: 0.0105,
+  prices: [{
+    width: 0.5,
+    price: 80
+  }, {
+    width: 0.75,
+    price: 75
+  }, {
+    width: 1.1,
+    price: 70
+  }, {
+    width: Infinity,
+    price: 65
+  }]
 }, {
-  id: 'agcu92',
+  id: 'agcu925',
   label: 'AgCu 92,5',
-  density: 0.01038
-}];
+  density: 0.01038,
+  prices: [{
+    width: 0.5,
+    price: 80
+  }, {
+    width: 0.75,
+    price: 75
+  }, {
+    width: 1.1,
+    price: 70
+  }, {
+    width: Infinity,
+    price: 65
+  }]
+} // {
+//   id: 'agcu72',
+//   label: 'AgCu 72',
+//   density: 0.01006,
+//   prices: [{
+//     width: 0.5,
+//     price: 70,
+//   }, {
+//     width: 0.75,
+//     price: 70,
+//   }, {
+//     width: 1.1,
+//     price: 70,
+//   }, {
+//     width: Infinity,
+//     price: 65,
+//   }],
+// },
+];
 var DIMENTIONS = [{
   id: 'length',
   label: 'м'
@@ -18,23 +62,10 @@ var DIMENTIONS = [{
   id: 'weight',
   label: 'гр'
 }];
-var PRICES = [{
-  width: 0.5,
-  price: 70
-}, {
-  width: 0.75,
-  price: 70
-}, {
-  width: 1.1,
-  price: 70
-}, {
-  width: Infinity,
-  price: 65
-}];
 var RESTRICTIONS = {
   width: {
-    min: 0.5,
-    max: 2
+    min: 0.3,
+    max: 2.5
   },
   weight: {
     min: 1,
@@ -42,10 +73,11 @@ var RESTRICTIONS = {
   },
   length: {
     min: 0.01,
-    max: 100
+    max: 1000
   }
 };
 var MIN_ORDER_WEIGHT = 100;
+var CLASS_DISABLED = 'button_base--disabled';
 var Order = {
   items: [],
   addItem: function addItem() {
@@ -54,10 +86,6 @@ var Order = {
       width: null,
       length: null,
       weight: null,
-      // product: 'ad99',
-      // width: 1,
-      // length: 1,
-      // weight: null,
       dimention: 'length'
     });
   },
@@ -70,7 +98,15 @@ var Order = {
   },
   total: function total() {
     var total = this.items.reduce(function (sum, item) {
-      var priceDict = PRICES.find(function (p) {
+      var product = PRODUCTS.find(function (p) {
+        return p.id === item.product;
+      });
+
+      if (!product) {
+        return sum;
+      }
+
+      var priceDict = product.prices.find(function (p) {
         return item.width < p.width;
       });
       var price = item.width && priceDict ? priceDict.price : 0;
@@ -83,7 +119,7 @@ var Order = {
     var _this = this;
 
     return PRODUCTS.map(function (product) {
-      var weight = _this.items.reduce(function (sum, i) {
+      var weight = _this.listValid().reduce(function (sum, i) {
         if (i.product !== product.id) {
           return sum;
         }
@@ -106,15 +142,18 @@ var Order = {
     }, 0);
     return Math.round(weight * 100) / 100;
   },
-  isValid: function isValid() {
-    return this.items.reduce(function (isValid, item) {
+  listValid: function listValid() {
+    return this.items.filter(function (item) {
       var requiredFields = ['product', 'width', item.dimention];
-      var itemValid = requiredFields.reduce(function (isValid, field) {
-        var validRange = RESTRICTIONS[field] ? item[field] >= RESTRICTIONS[field].min && item[field] <= RESTRICTIONS[field].max : true;
-        return isValid && validRange && Boolean(item[field]);
+      return requiredFields.reduce(function (isValid, field) {
+        return isValid && Boolean(item[field]);
       }, true);
-      return isValid && itemValid;
-    }, true);
+    });
+  },
+  isValid: function isValid() {
+    var priceValid = this.total() > 0;
+    var weightValid = this.totalWeight() >= 100;
+    return priceValid && weightValid;
   }
 };
 
@@ -137,17 +176,14 @@ function widthWeight(_ref) {
 $(document).ready(function () {
   // init input mask
   var inputsNumberMask = document.querySelectorAll('.js-input-number-mask');
-  var inputsPhoneMask = document.querySelectorAll('.js-input-phone-mask');
-  inputsNumberMask.forEach(function (elem) {
-    IMask(elem, {
-      mask: Number
-    });
-  });
-  inputsPhoneMask.forEach(function (elem) {
-    IMask(elem, {
-      mask: '+{7}(000)000-00-00'
-    });
-  });
+  var inputsPhoneMask = document.querySelectorAll('.js-input-phone-mask'); // inputsNumberMask.forEach(elem => {
+  //   IMask(elem, { mask: Number });
+  // });
+  // inputsPhoneMask.forEach(elem => {
+  //   IMask(elem, {
+  //     mask: '+{7}(000)000-00-00'
+  //   });
+  // });
 
   var setShowForm = function setShowForm(value) {
     var calcNode = document.querySelector('.calc');
@@ -187,10 +223,23 @@ $(document).ready(function () {
   addButtonRowNode.addEventListener('click', function () {
     Order.addItem();
     drawTable();
+    drawCalc();
   });
   submitBtn.on('click', function (e) {
     e.preventDefault();
     submitForm(calcForm);
+  });
+  calcForm.on('change', function () {
+    var inputs = calcForm.find('input[required]');
+    var formValid = inputs.toArray().reduce(function (isValid, i) {
+      return isValid && Boolean(i.value);
+    }, true);
+
+    if (formValid) {
+      submitBtn.removeClass(CLASS_DISABLED);
+    } else {
+      submitBtn.addClass(CLASS_DISABLED);
+    }
   });
 
   drawTable = function drawTable() {
@@ -207,14 +256,20 @@ $(document).ready(function () {
     $totalNode.text("\u0418\u0442\u043E\u0433: ".concat(Order.total(), " \u0440."));
     $priceListNode.empty();
     $priceListNode.append(Order.weightList().map(createPriceListItemNode));
+    resetAlerts();
+
+    if (Order.isValid()) {
+      checkoutButton.classList.remove(CLASS_DISABLED);
+    } else {
+      checkoutButton.classList.add(CLASS_DISABLED);
+    }
   };
 
   var sendOrder = function sendOrder(json) {
     var url = '/index.php?rest_route=/beta/v1/orders'; // const url = '/wp-json/beta/v1/orders';
 
-    var disabledClass = 'button_base--disabled';
     var submitBtn = $('order-form-submit');
-    submitBtn.addClass(disabledClass);
+    submitBtn.addClass(CLASS_DISABLED);
     return $.ajax({
       method: 'POST',
       url: url,
@@ -223,16 +278,16 @@ $(document).ready(function () {
         name: json.name,
         phone: json.phone,
         email: json.email,
-        items: Order.items
+        items: Order.listValid()
       })
     }).then(function (res) {
-      submitBtn.removeClass(disabledClass);
+      submitBtn.removeClass(CLASS_DISABLED);
 
       if (res.errors) {
         return res.errors;
       }
     }).catch(function (e) {
-      submitBtn.removeClass(disabledClass);
+      submitBtn.removeClass(CLASS_DISABLED);
       throw e;
     });
   };
@@ -260,13 +315,18 @@ $(document).ready(function () {
     });
   };
 
-  var sendFail = function sendFail(errors) {
+  sendFail = function sendFail(errors) {
     errorAlert.addClass('-active');
   };
 
-  var sendSuccess = function sendSuccess(errors) {
+  sendSuccess = function sendSuccess() {
     setShowForm(false);
     successAlert.addClass('-active');
+  };
+
+  resetAlerts = function resetAlerts() {
+    errorAlert.removeClass('-active');
+    successAlert.removeClass('-active');
   };
 
   Order.addItem();
@@ -461,7 +521,7 @@ function createRowNode(_ref6) {
     }
   });
   var inputWidth = createInputNode({
-    placeholder: 'Толщина',
+    placeholder: 'Диаметр',
     data: item,
     key: 'width',
     min: RESTRICTIONS.width.min,
@@ -478,7 +538,6 @@ function createRowNode(_ref6) {
     max: RESTRICTIONS.length.max,
     onChange: function onChange() {
       item.weight = (item.length || 0) * widthWeight(item);
-      console.log(item);
       drawCalc();
     }
   });
