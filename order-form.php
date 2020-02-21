@@ -25,10 +25,11 @@ add_shortcode('order-form', 'cof_build_form');
 
 // order form
 function create_new_order($request) {
+    $order = $request->get_json_params();
     $email = 's.shilin@cuberto.ru';
     $subject = 'Новый заказ';
 
-    $text = "Имя: ".$request->name."\nНомер телефона: ".$request->phone."\nEmail: ".$request->email;
+    $text = "Имя: ".$order['name']."\nНомер телефона: ".$order['phone']."\nEmail: ".$order['email']."\n\nЗаказ:".build_order_items_list($order);
 
     $result = wp_mail(
         $email,
@@ -45,3 +46,21 @@ add_action('rest_api_init', function () {
     'callback' => 'create_new_order',
   ));
 });
+
+function build_order_items_list($order) {
+    if (!$order['items']) {
+        return '';
+    }
+
+    $PRODUCTS = array(
+      'ag99' => 'Ад 99,99',
+      'agcu92' => 'АдСи 92,5'
+    );
+
+    $text = '';
+    foreach($order['items'] as $item) {
+        $text = $text."\n".$PRODUCTS[$item['product']].', толщина: '.$item['width'].'мм, вес: '.$item['weight'].'г'.($item['length'] ? ', длина: '.$item['length'].'м' : '');
+    }
+
+    return $text;
+}

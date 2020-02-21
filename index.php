@@ -63,7 +63,7 @@
                   <div class="calc-table__thead">
                     <div class="calc-table__tr">
                       <div class="calc-table__td"><span>Марка</span></div>
-                      <div class="calc-table__td"><span>Толщина</span></div>
+                      <div class="calc-table__td"><span>Толщина, мм</span></div>
                       <div class="calc-table__td length-weight-header"><span>Количество</span></div>
                       <div class="calc-table__td"><span>Измерение</span></div>
                     </div>

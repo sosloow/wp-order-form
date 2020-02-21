@@ -3,11 +3,13 @@
 let drawTable, drawCalc;
 
 const PRODUCTS = [{
-  id: 'ad99',
-  label: 'Ад 99,99',
+  id: 'ag99',
+  label: 'Ad 99,99',
+  density: 0.0105,
 }, {
-  id: 'adsi92',
-  label: 'АдСи 92,5',
+  id: 'agcu92',
+  label: 'AgCu 92,5',
+  density: 0.01038,
 }];
 
 const DIMENTIONS = [{
@@ -16,91 +18,6 @@ const DIMENTIONS = [{
 }, {
   id: 'weight',
   label: 'гр',
-}];
-
-WIDTH_WEIGHTS = [{
-  "width": 0.5,
-  "weight": 2.06
-},
-{
-  "width": 0.6,
-  "weight": 2.96
-},
-{
-  "width": 0.7,
-  "weight": 4.03
-},
-{
-  "width": 0.8,
-  "weight": 5.27
-},
-{
-  "width": 0.9,
-  "weight": 6.67
-},
-{
-  "width": 1,
-  "weight": 8.24
-},
-{
-  "width": 1.1,
-  "weight": 9.97
-},
-{
-  "width": 1.2,
-  "weight": 11.86
-},
-{
-  "width": 1.3,
-  "weight": 13.93
-},
-{
-  "width": 1.4,
-  "weight": 16.16
-},
-{
-  "width": 1.5,
-  "weight": 18.55
-},
-{
-  "width": 1.6,
-  "weight": 21.1
-},
-{
-  "width": 1.7,
-  "weight": 23.82
-},
-{
-  "width": 1.8,
-  "weight": 26.71
-},
-{
-  "width": 1.9,
-  "weight": 29.75
-},
-{
-  "width": 2,
-  "weight": 32.97
-},
-{
-  "width": 2.1,
-  "weight": 36.35
-},
-{
-  "width": 2.2,
-  "weight": 39.89
-},
-{
-  "width": 2.3,
-  "weight": 43.6
-},
-{
-  "width": 2.4,
-  "weight": 47.48
-},
-{
-  "width": 2.5,
-  "weight": 51.52
 }];
 
 const PRICES = [{
@@ -163,9 +80,10 @@ const Order = {
     const total = this.items.reduce((sum, item) => {
       const priceDict = PRICES.find((p) => item.width < p.width);
       const price = (item.width && priceDict ? priceDict.price : 0);
+
       const measure = item.dimention === 'weight'
         ? item.weight
-        : item.length * 100;
+        : item.length * widthWeight(item);
 
       return sum + price * (measure || 0);
     }, 0);
@@ -182,7 +100,7 @@ const Order = {
 
         const weight = i.dimention === 'weight'
           ? i.weight || 0
-          : (i.length || 0) * 100;
+          : (i.length || 0) * widthWeight(i);
 
         return sum + weight;
       }, 0);
@@ -223,6 +141,19 @@ const Order = {
   }
 };
 
+function widthWeight({product: productId, width}) {
+  const product = PRODUCTS.find((p) => p.id === productId);
+
+  if (!product) {
+    return 0;
+  }
+
+  const {density} = product;
+
+  const weight = Math.pow((width / 2), 2) * 3.14 * 1000 * density;
+
+  return Math.round(weight * 100) / 100;
+}
 
 $(document).ready(function() {
   // init input mask
@@ -595,6 +526,9 @@ function createRowNode({id, item}) {
     min: RESTRICTIONS.length.min,
     max: RESTRICTIONS.length.max,
     onChange() {
+      item.weight = (item.length || 0) * widthWeight(item);
+      console.log(item);
+
       drawCalc();
     },
   });
@@ -614,6 +548,9 @@ function createRowNode({id, item}) {
     data: item,
     key: 'dimention',
     onChange() {
+      item.length = null;
+      item.weight = null;
+
       drawTable();
       drawCalc();
     },

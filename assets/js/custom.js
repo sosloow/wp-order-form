@@ -3,11 +3,13 @@
 //import IMask from './node_modules/imask/dist/imask.js';
 var drawTable, drawCalc;
 var PRODUCTS = [{
-  id: 'ad99',
-  label: 'Ад 99,99'
+  id: 'ag99',
+  label: 'Ad 99,99',
+  density: 0.0105
 }, {
-  id: 'adsi92',
-  label: 'АдСи 92,5'
+  id: 'agcu92',
+  label: 'AgCu 92,5',
+  density: 0.01038
 }];
 var DIMENTIONS = [{
   id: 'length',
@@ -15,70 +17,6 @@ var DIMENTIONS = [{
 }, {
   id: 'weight',
   label: 'гр'
-}];
-WIDTH_WEIGHTS = [{
-  "width": 0.5,
-  "weight": 2.06
-}, {
-  "width": 0.6,
-  "weight": 2.96
-}, {
-  "width": 0.7,
-  "weight": 4.03
-}, {
-  "width": 0.8,
-  "weight": 5.27
-}, {
-  "width": 0.9,
-  "weight": 6.67
-}, {
-  "width": 1,
-  "weight": 8.24
-}, {
-  "width": 1.1,
-  "weight": 9.97
-}, {
-  "width": 1.2,
-  "weight": 11.86
-}, {
-  "width": 1.3,
-  "weight": 13.93
-}, {
-  "width": 1.4,
-  "weight": 16.16
-}, {
-  "width": 1.5,
-  "weight": 18.55
-}, {
-  "width": 1.6,
-  "weight": 21.1
-}, {
-  "width": 1.7,
-  "weight": 23.82
-}, {
-  "width": 1.8,
-  "weight": 26.71
-}, {
-  "width": 1.9,
-  "weight": 29.75
-}, {
-  "width": 2,
-  "weight": 32.97
-}, {
-  "width": 2.1,
-  "weight": 36.35
-}, {
-  "width": 2.2,
-  "weight": 39.89
-}, {
-  "width": 2.3,
-  "weight": 43.6
-}, {
-  "width": 2.4,
-  "weight": 47.48
-}, {
-  "width": 2.5,
-  "weight": 51.52
 }];
 var PRICES = [{
   width: 0.5,
@@ -136,7 +74,7 @@ var Order = {
         return item.width < p.width;
       });
       var price = item.width && priceDict ? priceDict.price : 0;
-      var measure = item.dimention === 'weight' ? item.weight : item.length * 100;
+      var measure = item.dimention === 'weight' ? item.weight : item.length * widthWeight(item);
       return sum + price * (measure || 0);
     }, 0);
     return Math.round(total * 100) / 100;
@@ -150,7 +88,7 @@ var Order = {
           return sum;
         }
 
-        var weight = i.dimention === 'weight' ? i.weight || 0 : (i.length || 0) * 100;
+        var weight = i.dimention === 'weight' ? i.weight || 0 : (i.length || 0) * widthWeight(i);
         return sum + weight;
       }, 0);
 
@@ -179,6 +117,23 @@ var Order = {
     }, true);
   }
 };
+
+function widthWeight(_ref) {
+  var productId = _ref.product,
+      width = _ref.width;
+  var product = PRODUCTS.find(function (p) {
+    return p.id === productId;
+  });
+
+  if (!product) {
+    return 0;
+  }
+
+  var density = product.density;
+  var weight = Math.pow(width / 2, 2) * 3.14 * 1000 * density;
+  return Math.round(weight * 100) / 100;
+}
+
 $(document).ready(function () {
   // init input mask
   var inputsNumberMask = document.querySelectorAll('.js-input-number-mask');
@@ -289,9 +244,9 @@ $(document).ready(function () {
     // }
 
     var json = {};
-    data.forEach(function (_ref) {
-      var name = _ref.name,
-          value = _ref.value;
+    data.forEach(function (_ref2) {
+      var name = _ref2.name,
+          value = _ref2.value;
       return json[name] = value;
     });
     return sendOrder(json).then(function (errors) {
@@ -373,12 +328,12 @@ function createTableTdNode(content) {
 
 ;
 
-function createSelectNode(_ref2) {
-  var placeholder = _ref2.placeholder,
-      options = _ref2.options,
-      data = _ref2.data,
-      key = _ref2.key,
-      onChange = _ref2.onChange;
+function createSelectNode(_ref3) {
+  var placeholder = _ref3.placeholder,
+      options = _ref3.options,
+      data = _ref3.data,
+      key = _ref3.key,
+      onChange = _ref3.onChange;
   var value = data[key];
   var select = document.createElement('select');
   var $select = $(select);
@@ -425,19 +380,19 @@ function createSelectNode(_ref2) {
 
 ;
 
-function createInputNode(_ref3) {
-  var placeholder = _ref3.placeholder,
-      _ref3$data = _ref3.data,
-      data = _ref3$data === void 0 ? {} : _ref3$data,
-      key = _ref3.key,
-      _ref3$min = _ref3.min,
-      min = _ref3$min === void 0 ? 0 : _ref3$min,
-      _ref3$max = _ref3.max,
-      max = _ref3$max === void 0 ? Infinity : _ref3$max,
-      _ref3$step = _ref3.step,
-      step = _ref3$step === void 0 ? 0.05 : _ref3$step,
-      _ref3$onChange = _ref3.onChange,
-      onChange = _ref3$onChange === void 0 ? function () {} : _ref3$onChange;
+function createInputNode(_ref4) {
+  var placeholder = _ref4.placeholder,
+      _ref4$data = _ref4.data,
+      data = _ref4$data === void 0 ? {} : _ref4$data,
+      key = _ref4.key,
+      _ref4$min = _ref4.min,
+      min = _ref4$min === void 0 ? 0 : _ref4$min,
+      _ref4$max = _ref4.max,
+      max = _ref4$max === void 0 ? Infinity : _ref4$max,
+      _ref4$step = _ref4.step,
+      step = _ref4$step === void 0 ? 0.05 : _ref4$step,
+      _ref4$onChange = _ref4.onChange,
+      onChange = _ref4$onChange === void 0 ? function () {} : _ref4$onChange;
   var div = document.createElement('div');
   div.classList.add('input_base');
   var input = document.createElement('input');
@@ -482,18 +437,18 @@ var createButtonNode = function createButtonNode() {
   return button;
 };
 
-function createPriceListItemNode(_ref4) {
-  var product = _ref4.product,
-      weight = _ref4.weight;
+function createPriceListItemNode(_ref5) {
+  var product = _ref5.product,
+      weight = _ref5.weight;
   var span = document.createElement('span');
   span.classList.add('calc-result-price');
   span.textContent = "".concat(product, ": ").concat(weight, " \u0433\u0440.");
   return span;
 }
 
-function createRowNode(_ref5) {
-  var id = _ref5.id,
-      item = _ref5.item;
+function createRowNode(_ref6) {
+  var id = _ref6.id,
+      item = _ref6.item;
   var tableTr = document.createElement('div');
   var selectMark = createSelectNode({
     placeholder: 'Марка',
@@ -522,6 +477,8 @@ function createRowNode(_ref5) {
     min: RESTRICTIONS.length.min,
     max: RESTRICTIONS.length.max,
     onChange: function onChange() {
+      item.weight = (item.length || 0) * widthWeight(item);
+      console.log(item);
       drawCalc();
     }
   });
@@ -541,6 +498,8 @@ function createRowNode(_ref5) {
     data: item,
     key: 'dimention',
     onChange: function onChange() {
+      item.length = null;
+      item.weight = null;
       drawTable();
       drawCalc();
     }
