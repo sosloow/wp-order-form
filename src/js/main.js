@@ -75,7 +75,7 @@ const RESTRICTIONS = {
     max: 10000,
   },
   length: {
-    min: 0.01,
+    min: 0.1,
     max: 1000,
   },
 };
@@ -119,7 +119,7 @@ const Order = {
       if (!priceDict) {
         return sumByProducts;
       }
-      // console.log(sumByProducts);
+
       const sumObject = sumByProducts.find((s) => s.id === product.id);
       const hasAddedPrice = sumObject.count > 1;
 
@@ -160,7 +160,7 @@ const Order = {
 
       return {
         product: product.label,
-        weight,
+        weight: Math.round(weight * 10) / 10,
       };
     })
     .filter((item) => item.weight);
@@ -199,7 +199,7 @@ const Order = {
 function widthWeight({product: productId, width}) {
   const product = PRODUCTS.find((p) => p.id === productId);
 
-  if (!product) {
+  if (! product) {
     return 0;
   }
 
@@ -364,13 +364,16 @@ $(document).ready(function() {
 
     return sendOrder(json)
     .then((errors) => {
+      console.log(errors);
       if (errors) {
         return sendFail(errors);
       }
 
       sendSuccess();
     })
-    .catch(() => {
+    .catch((err) => {
+      console.error(err);
+
       sendFail();
     });
   }
@@ -584,6 +587,9 @@ function createRowNode({id, item}) {
     data: item,
     key: 'product',
     onChange() {
+      if (item.dimention === 'length') {
+        item.weight = (item.length || 0) * widthWeight(item);
+      }
       drawTable();
       drawCalc();
     },
@@ -596,6 +602,10 @@ function createRowNode({id, item}) {
     min: RESTRICTIONS.width.min,
     max: RESTRICTIONS.width.max,
     onChange() {
+      if (item.dimention === 'length') {
+        item.weight = (item.length || 0) * widthWeight(item);
+      }
+
       drawCalc();
     },
   });
