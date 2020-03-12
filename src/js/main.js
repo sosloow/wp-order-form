@@ -109,7 +109,7 @@ const Order = {
 
   total() {
     const total = this.listValid()
-    .sort((i1, i2) => i1.width > i2.width ? 1 : -1)
+    .sort((i1, i2) => i1.width < i2.width ? 1 : -1)
     .reduce((sumByProducts, item) => {
       const product = PRODUCTS.find((p) => p.id === item.product);
       if (!product) {
@@ -125,7 +125,7 @@ const Order = {
 
       const price =
         priceDict.price * item.weight
-        + (hasAddedPrice ? priceDict.price * PRICE_ADDED : 0);
+        + (hasAddedPrice ? priceDict.price * item.weight * PRICE_ADDED : 0);
 
       const sumIndex = sumByProducts.indexOf(sumObject);
       const updatedSumObject = {

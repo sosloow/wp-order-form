@@ -99,7 +99,7 @@ var Order = {
   },
   total: function total() {
     var total = this.listValid().sort(function (i1, i2) {
-      return i1.width > i2.width ? 1 : -1;
+      return i1.width < i2.width ? 1 : -1;
     }).reduce(function (sumByProducts, item) {
       var product = PRODUCTS.find(function (p) {
         return p.id === item.product;
@@ -122,7 +122,7 @@ var Order = {
         return s.id === product.id;
       });
       var hasAddedPrice = sumObject.count > 1;
-      var price = priceDict.price * item.weight + (hasAddedPrice ? priceDict.price * PRICE_ADDED : 0);
+      var price = priceDict.price * item.weight + (hasAddedPrice ? priceDict.price * item.weight * PRICE_ADDED : 0);
       var sumIndex = sumByProducts.indexOf(sumObject);
       var updatedSumObject = {
         id: sumObject.id,

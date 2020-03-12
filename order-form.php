@@ -31,7 +31,7 @@ function create_new_order($request) {
     $subject = 'Новый заказ';
 
     $text = "Имя: ".$order['name']."\nНомер телефона: ".$order['phone']."\nEmail: ".$order['email']."\n\nЗаказ:".build_order_items_list($order)."\n\nИтог: ".$order['total'].' руб.';
-    echo(var_dump($text));
+
     $result = wp_mail(
         $email,
         $subject,
