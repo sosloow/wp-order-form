@@ -72,7 +72,7 @@ var RESTRICTIONS = {
     max: 10000
   },
   length: {
-    min: 0.01,
+    min: 0.1,
     max: 1000
   }
 };
@@ -115,8 +115,7 @@ var Order = {
 
       if (!priceDict) {
         return sumByProducts;
-      } // console.log(sumByProducts);
-
+      }
 
       var sumObject = sumByProducts.find(function (s) {
         return s.id === product.id;
@@ -156,7 +155,7 @@ var Order = {
 
       return {
         product: product.label,
-        weight: weight
+        weight: Math.round(weight * 10) / 10
       };
     }).filter(function (item) {
       return item.weight;
@@ -332,12 +331,15 @@ $(document).ready(function () {
       return json[name] = value;
     });
     return sendOrder(json).then(function (errors) {
+      console.log(errors);
+
       if (errors) {
         return sendFail(errors);
       }
 
       sendSuccess();
-    }).catch(function () {
+    }).catch(function (err) {
+      console.error(err);
       sendFail();
     });
   };
@@ -543,6 +545,10 @@ function createRowNode(_ref6) {
     data: item,
     key: 'product',
     onChange: function onChange() {
+      if (item.dimention === 'length') {
+        item.weight = (item.length || 0) * widthWeight(item);
+      }
+
       drawTable();
       drawCalc();
     }
@@ -554,6 +560,10 @@ function createRowNode(_ref6) {
     min: RESTRICTIONS.width.min,
     max: RESTRICTIONS.width.max,
     onChange: function onChange() {
+      if (item.dimention === 'length') {
+        item.weight = (item.length || 0) * widthWeight(item);
+      }
+
       drawCalc();
     }
   });
