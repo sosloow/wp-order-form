@@ -8,16 +8,16 @@ var PRODUCTS = [{
   density: 0.0105,
   prices: [{
     width: 0.5,
-    price: 80
+    price: 115
   }, {
     width: 0.75,
-    price: 75
+    price: 110
   }, {
     width: 1.1,
-    price: 70
+    price: 105
   }, {
     width: Infinity,
-    price: 65
+    price: 100
   }]
 }, {
   id: 'agcu925',
@@ -25,16 +25,16 @@ var PRODUCTS = [{
   density: 0.01038,
   prices: [{
     width: 0.5,
-    price: 80
+    price: 115
   }, {
     width: 0.75,
-    price: 75
+    price: 110
   }, {
     width: 1.1,
-    price: 70
+    price: 105
   }, {
     width: Infinity,
-    price: 65
+    price: 100
   }]
 } // {
 //   id: 'agcu72',
@@ -65,7 +65,7 @@ var DIMENTIONS = [{
 var RESTRICTIONS = {
   width: {
     min: 0.3,
-    max: 2.5
+    max: 4.5
   },
   weight: {
     min: 1,
@@ -76,7 +76,7 @@ var RESTRICTIONS = {
     max: 1000
   }
 };
-var PRICE_ADDED = 0.1;
+var PRICE_ADDED = 0.0;
 var MIN_ORDER_WEIGHT = 100;
 var CLASS_DISABLED = 'button_base--disabled';
 var Order = {
@@ -122,6 +122,7 @@ var Order = {
       });
       var hasAddedPrice = sumObject.count > 1;
       var price = priceDict.price * item.weight + (hasAddedPrice ? priceDict.price * item.weight * PRICE_ADDED : 0);
+      console.log(item, price);
       var sumIndex = sumByProducts.indexOf(sumObject);
       var updatedSumObject = {
         id: sumObject.id,
@@ -149,13 +150,13 @@ var Order = {
           return sum;
         }
 
-        var weight = i.dimention === 'weight' ? i.weight || 0 : (i.length || 0) * widthWeight(i);
+        var weight = i.dimention === 'weight' ? i.weight || 0 : lengthWeight(i);
         return sum + weight;
       }, 0);
 
       return {
         product: product.label,
-        weight: Math.round(weight * 10) / 10
+        weight: Math.ceil(weight * 10) / 10
       };
     }).filter(function (item) {
       return item.weight;
@@ -165,7 +166,7 @@ var Order = {
     var weight = this.weightList().reduce(function (sum, i) {
       return sum + i.weight;
     }, 0);
-    return Math.round(weight * 100) / 100;
+    return Math.ceil(weight * 10) / 10;
   },
   listValid: function listValid() {
     return this.items.filter(function (item) {
@@ -196,6 +197,10 @@ function widthWeight(_ref) {
   var density = product.density;
   var weight = Math.pow(width / 2, 2) * 3.14 * 1000 * density;
   return Math.round(weight * 100) / 100;
+}
+
+function lengthWeight(item) {
+  return Math.ceil((item.length || 0) * widthWeight(item) * 10) / 10;
 }
 
 $(document).ready(function () {
@@ -546,7 +551,7 @@ function createRowNode(_ref6) {
     key: 'product',
     onChange: function onChange() {
       if (item.dimention === 'length') {
-        item.weight = (item.length || 0) * widthWeight(item);
+        item.weight = lengthWeight(item);
       }
 
       drawTable();
@@ -561,7 +566,7 @@ function createRowNode(_ref6) {
     max: RESTRICTIONS.width.max,
     onChange: function onChange() {
       if (item.dimention === 'length') {
-        item.weight = (item.length || 0) * widthWeight(item);
+        item.weight = lengthWeight(item);
       }
 
       drawCalc();
@@ -574,7 +579,7 @@ function createRowNode(_ref6) {
     min: RESTRICTIONS.length.min,
     max: RESTRICTIONS.length.max,
     onChange: function onChange() {
-      item.weight = (item.length || 0) * widthWeight(item);
+      item.weight = lengthWeight(item);
       drawCalc();
     }
   });
@@ -585,6 +590,7 @@ function createRowNode(_ref6) {
     min: RESTRICTIONS.weight.min,
     max: RESTRICTIONS.weight.max,
     onChange: function onChange() {
+      item.weight = Math.ceil(item.weight * 10) / 10;
       drawCalc();
     }
   });
